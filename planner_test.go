@@ -34,4 +34,12 @@ func TestTasks(t *testing.T) {
 			t.Errorf("got %+v, want %+v", got, want)
 		}
 	})
+
+	t.Run("Test error when task id doesn't exist", func(t *testing.T) {
+		err := taskList.Complete(100)
+
+		if err == nil {
+			t.Errorf("Expected an error")
+		}
+	})
 }
