@@ -13,11 +13,11 @@ func TestTasks(t *testing.T) {
 	t.Run("A task is added to the task list", func(t *testing.T) {
 		taskList.Add("Task 1")
 
-		got := taskList.GetAll()
-		want := []planner.Task{{Id: 1, Name: "Task 1", Complete: false}}
+		got := taskList
+		want := planner.Tasks{{Id: 1, Name: "Task 1", Complete: false}}
 
 		if !reflect.DeepEqual(got, want) {
-			t.Errorf("got %+v, want %+v", got, want)
+			t.Errorf("got %#v, want %#v", got, want)
 		}
 	})
 
@@ -27,8 +27,8 @@ func TestTasks(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		got := taskList.GetAll()
-		want := []planner.Task{{Id: 1, Name: "Task 1", Complete: true}}
+		got := taskList
+		want := planner.Tasks{{Id: 1, Name: "Task 1", Complete: true}}
 
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got %+v, want %+v", got, want)

@@ -26,10 +26,6 @@ func (t Tasks) Complete(id int) error {
 	return nil
 }
 
-func (t Tasks) GetAll() []Task {
-	return t
-}
-
 func (t Tasks) GetOutstanding() []Task {
 	outstanding := []Task{}
 	for _, task := range t {
