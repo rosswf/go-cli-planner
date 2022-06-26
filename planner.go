@@ -15,14 +15,18 @@ func (t *Tasks) Add(name string) {
 	*t = append(*t, Task{Id: nextId, Name: name, Complete: false})
 }
 
-func (t Tasks) Complete(id int) error {
+func (t Tasks) ToggleStatus(id int) error {
 	id-- // slice is zero indexed
 
 	if id > len(t) {
 		return errors.New("No task with that id")
 	}
 
-	t[id].Complete = true
+	if t[id].Complete {
+		t[id].Complete = false
+	} else {
+		t[id].Complete = true
+	}
 	return nil
 }
 

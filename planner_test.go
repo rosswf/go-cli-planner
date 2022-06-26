@@ -22,7 +22,7 @@ func TestTasks(t *testing.T) {
 	})
 
 	t.Run("A task is marked as completed", func(t *testing.T) {
-		err := taskList.Complete(1)
+		err := taskList.ToggleStatus(1)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -34,9 +34,22 @@ func TestTasks(t *testing.T) {
 			t.Errorf("got %+v, want %+v", got, want)
 		}
 	})
+	t.Run("A task is marked as incomplete", func(t *testing.T) {
+		err := taskList.ToggleStatus(1)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		got := taskList
+		want := planner.Tasks{{Id: 1, Name: "Task 1", Complete: false}}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %+v, want %+v", got, want)
+		}
+	})
 
 	t.Run("Test error when task id doesn't exist", func(t *testing.T) {
-		err := taskList.Complete(100)
+		err := taskList.ToggleStatus(100)
 
 		if err == nil {
 			t.Errorf("Expected an error")
@@ -47,7 +60,11 @@ func TestTasks(t *testing.T) {
 		taskList.Add("Task 2")
 		taskList.Add("Task 3")
 		taskList.Add("Task 4")
-		err := taskList.Complete(3)
+		err := taskList.ToggleStatus(1)
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = taskList.ToggleStatus(3)
 		if err != nil {
 			t.Fatal(err)
 		}
