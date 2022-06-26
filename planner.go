@@ -3,6 +3,7 @@ package planner
 import "errors"
 
 type Task struct {
+	Id       int
 	Name     string
 	Complete bool
 }
@@ -10,7 +11,8 @@ type Task struct {
 type Tasks []Task
 
 func (t *Tasks) Add(name string) {
-	*t = append(*t, Task{Name: name, Complete: false})
+	nextId := len(*t) + 1
+	*t = append(*t, Task{Id: nextId, Name: name, Complete: false})
 }
 
 func (t Tasks) Complete(id int) error {
