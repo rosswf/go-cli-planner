@@ -29,3 +29,13 @@ func (t Tasks) Complete(id int) error {
 func (t Tasks) GetAll() []Task {
 	return t
 }
+
+func (t Tasks) GetOutstanding() []Task {
+	outstanding := []Task{}
+	for _, task := range t {
+		if !task.Complete {
+			outstanding = append(outstanding, task)
+		}
+	}
+	return outstanding
+}

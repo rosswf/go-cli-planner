@@ -42,4 +42,24 @@ func TestTasks(t *testing.T) {
 			t.Errorf("Expected an error")
 		}
 	})
+
+	t.Run("Test only show incomplete", func(t *testing.T) {
+		taskList.Add("Task 2")
+		taskList.Add("Task 3")
+		taskList.Add("Task 4")
+		err := taskList.Complete(3)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		got := taskList.GetOutstanding()
+		want := []planner.Task{
+			{Id: 2, Name: "Task 2", Complete: false},
+			{Id: 4, Name: "Task 4", Complete: false},
+		}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %+v, want %+v", got, want)
+		}
+	})
 }
