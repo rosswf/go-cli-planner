@@ -1,41 +1,50 @@
 package planner
 
-import "errors"
+type TaskStorage interface {
+	Add(*Task) error
+	GetAll() ([]Task, error)
+	GetTask(TaskId) (*Task, error)
+	ToggleStatus(TaskId) error
+	GetOutstanding() ([]Task, error)
+}
+
+type TaskId int64
 
 type Task struct {
-	Id       int
+	Id       TaskId
 	Name     string
 	Complete bool
 }
 
-type Tasks []Task
-
-func (t *Tasks) Add(name string) {
-	nextId := len(*t) + 1
-	*t = append(*t, Task{Id: nextId, Name: name, Complete: false})
+type TaskList struct {
+	storage TaskStorage
 }
 
-func (t Tasks) ToggleStatus(id int) error {
-	id-- // slice is zero indexed
+func CreateTaskList(storage TaskStorage) (*TaskList, error) {
+	return &TaskList{storage: storage}, nil
+}
 
-	if id > len(t) {
-		return errors.New("No task with that id")
-	}
-
-	if t[id].Complete {
-		t[id].Complete = false
-	} else {
-		t[id].Complete = true
+func (t *TaskList) Add(name string) error {
+	task := Task{Name: name, Complete: false}
+	err := t.storage.Add(&task)
+	if err != nil {
+		return err
 	}
 	return nil
 }
 
-func (t Tasks) GetOutstanding() []Task {
-	outstanding := []Task{}
-	for _, task := range t {
-		if !task.Complete {
-			outstanding = append(outstanding, task)
-		}
+func (t *TaskList) GetAll() ([]Task, error) {
+	return t.storage.GetAll()
+}
+
+func (t *TaskList) ToggleStatus(task *Task) error {
+	err := t.storage.ToggleStatus(task.Id)
+	if err != nil {
+		return err
 	}
-	return outstanding
+	return nil
+}
+
+func (t TaskList) GetOutstanding() ([]Task, error) {
+	return t.storage.GetOutstanding()
 }
