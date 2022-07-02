@@ -68,7 +68,28 @@ func (s *Sqlite3TaskStorage) GetTask(id planner.TaskId) (*planner.Task, error) {
 	return &planner.Task{Id: taskId, Name: name, Complete: complete}, nil
 }
 
-func (s *Sqlite3TaskStorage) ToggleStatus(planner.TaskId) error {
+func (s *Sqlite3TaskStorage) ToggleStatus(id planner.TaskId) error {
+	tx, err := s.conn.Begin()
+	if err != nil {
+		return err
+	}
+
+	stmt, err := tx.Prepare("UPDATE tasks SET complete = CASE WHEN complete = true THEN false ELSE true END WHERE id=?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

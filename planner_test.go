@@ -188,6 +188,19 @@ func TestSqlite3TaskStorage(t *testing.T) {
 			t.Errorf("got %+v, want %+v", got, want)
 		}
 	})
+
+	t.Run("Toggle task status", func(t *testing.T) {
+		err := storage.ToggleStatus(1)
+		AssertNoError(t, err)
+
+		got, _ := storage.GetTask(1)
+
+		want := &planner.Task{Id: 1, Name: "Task 1", Complete: true}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %+v, want %+v", got, want)
+		}
+	})
 }
 
 func AssertNoError(t testing.TB, err error) {
