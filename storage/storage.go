@@ -56,7 +56,16 @@ func (s *Sqlite3TaskStorage) GetAll() ([]planner.Task, error) {
 }
 
 func (s *Sqlite3TaskStorage) GetTask(id planner.TaskId) (*planner.Task, error) {
-	return &planner.Task{}, nil
+	row := s.conn.QueryRow("SELECT * FROM tasks WHERE id = ?", id)
+
+	var taskId planner.TaskId
+	var name string
+	var complete bool
+	err := row.Scan(&taskId, &name, &complete)
+	if err != nil {
+		return nil, err
+	}
+	return &planner.Task{Id: taskId, Name: name, Complete: complete}, nil
 }
 
 func (s *Sqlite3TaskStorage) ToggleStatus(planner.TaskId) error {
