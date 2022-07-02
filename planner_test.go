@@ -6,6 +6,7 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 	planner "github.com/rosswf/go-cli-planner"
+	storage "github.com/rosswf/go-cli-planner/storage"
 )
 
 type MockTaskStorage struct {
@@ -152,6 +153,28 @@ func TestTasks(t *testing.T) {
 			t.Errorf("got %+v, want %+v", got, want)
 		}
 	})
+}
+
+func TestSqlite3TaskStorage(t *testing.T) {
+	storage, err := storage.CreateSqlite3TaskStorage(":memory:")
+	AssertNoError(t, err)
+
+	t.Run("Add a new task", func(t *testing.T) {
+		task := planner.Task{Name: "Task 1", Complete: false}
+
+		err := storage.Add(&task)
+		AssertNoError(t, err)
+
+		got, err := storage.GetAll()
+		AssertNoError(t, err)
+
+		want := []planner.Task{{Id: 1, Name: "Task 1", Complete: false}}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %+v, want %+v", got, want)
+		}
+	})
+
 }
 
 func AssertNoError(t testing.TB, err error) {
