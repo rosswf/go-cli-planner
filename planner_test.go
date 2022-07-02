@@ -93,12 +93,12 @@ func TestTasks(t *testing.T) {
 	})
 
 	t.Run("A task is marked as incomplete", func(t *testing.T) {
-		tasks, err := taskList.GetAll()
+		tasks, _ := taskList.GetAll()
 
-		err = taskList.ToggleStatus(&tasks[0])
+		err := taskList.ToggleStatus(&tasks[0])
 		AssertNoError(t, err)
 
-		got, err := taskList.GetAll()
+		got, _ := taskList.GetAll()
 
 		want := []planner.Task{{Id: 1, Name: "Task 1", Complete: false}}
 
@@ -110,10 +110,10 @@ func TestTasks(t *testing.T) {
 		taskList.Add("Task 3")
 		taskList.Add("Task 4")
 
-		tasks, err := taskList.GetAll()
+		tasks, _ := taskList.GetAll()
 
-		err = taskList.ToggleStatus(&tasks[0])
-		err = taskList.ToggleStatus(&tasks[2])
+		taskList.ToggleStatus(&tasks[0])
+		taskList.ToggleStatus(&tasks[2])
 
 		got, err := taskList.GetOutstanding()
 		AssertNoError(t, err)
@@ -127,12 +127,12 @@ func TestTasks(t *testing.T) {
 	})
 
 	t.Run("Delete a task", func(t *testing.T) {
-		tasks, err := taskList.GetAll()
+		tasks, _ := taskList.GetAll()
 
-		err = taskList.Delete(&tasks[1])
+		err := taskList.Delete(&tasks[1])
 		AssertNoError(t, err)
 
-		got, err := taskList.GetAll()
+		got, _ := taskList.GetAll()
 		AssertNoError(t, err)
 
 		want := []planner.Task{
@@ -200,6 +200,21 @@ func TestSqlite3TaskStorage(t *testing.T) {
 
 		AssertTaskListsEqual(t, got, want)
 	})
+
+	t.Run("Delete a task", func(t *testing.T) {
+		err := storage.Delete(2)
+		AssertNoError(t, err)
+
+		got, _ := storage.GetAll()
+
+		want := []planner.Task{
+			{Id: 1, Name: "Task 1", Complete: true},
+			{Id: 3, Name: "Task 3", Complete: false},
+			{Id: 4, Name: "Task 4", Complete: false},
+		}
+
+		AssertTaskListsEqual(t, got, want)
+	})
 }
 
 func AssertNoError(t testing.TB, err error) {
@@ -221,5 +236,4 @@ func AddTaskToDB(t testing.TB, storage *storage.Sqlite3TaskStorage, name string,
 	task := planner.Task{Name: name, Complete: status}
 	err := storage.Add(&task)
 	AssertNoError(t, err)
-
 }

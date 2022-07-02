@@ -108,5 +108,24 @@ func (s *Sqlite3TaskStorage) GetOutstanding() ([]planner.Task, error) {
 }
 
 func (s *Sqlite3TaskStorage) Delete(id planner.TaskId) error {
+	tx, err := s.conn.Begin()
+	if err != nil {
+		return err
+	}
+	stmt, err := tx.Prepare("DELETE FROM tasks WHERE id=?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
