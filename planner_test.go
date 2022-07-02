@@ -47,7 +47,6 @@ func (m *MockTaskStorage) GetOutstanding() ([]planner.Task, error) {
 		}
 	}
 	return outstanding, nil
-
 }
 
 func CreateMockStorage() *MockTaskStorage {
@@ -57,21 +56,15 @@ func CreateMockStorage() *MockTaskStorage {
 func TestTasks(t *testing.T) {
 	storage := CreateMockStorage()
 
-	taskList, err := planner.CreateTaskList(storage)
-	if err != nil {
-		t.Fatal(err)
-	}
+	taskList := planner.CreateTaskList(storage)
 
 	t.Run("A task is added to the task list", func(t *testing.T) {
 		err := taskList.Add("Task 1")
-		if err != nil {
-			t.Fatal(err)
-		}
+		AssertNoError(t, err)
 
 		got, err := taskList.GetAll()
-		if err != nil {
-			t.Fatal(err)
-		}
+		AssertNoError(t, err)
+
 		want := []planner.Task{{Id: 1, Name: "Task 1", Complete: false}}
 
 		if !reflect.DeepEqual(got, want) {
@@ -81,18 +74,14 @@ func TestTasks(t *testing.T) {
 
 	t.Run("A task is marked as completed", func(t *testing.T) {
 		tasks, err := taskList.GetAll()
-		if err != nil {
-			t.Fatal(err)
-		}
+		AssertNoError(t, err)
+
 		err = taskList.ToggleStatus(&tasks[0])
-		if err != nil {
-			t.Fatal(err)
-		}
+		AssertNoError(t, err)
 
 		got, err := taskList.GetAll()
-		if err != nil {
-			t.Fatal(err)
-		}
+		AssertNoError(t, err)
+
 		want := []planner.Task{{Id: 1, Name: "Task 1", Complete: true}}
 
 		if !reflect.DeepEqual(got, want) {
@@ -102,18 +91,14 @@ func TestTasks(t *testing.T) {
 
 	t.Run("A task is marked as incomplete", func(t *testing.T) {
 		tasks, err := taskList.GetAll()
-		if err != nil {
-			t.Fatal(err)
-		}
+		AssertNoError(t, err)
+
 		err = taskList.ToggleStatus(&tasks[0])
-		if err != nil {
-			t.Fatal(err)
-		}
+		AssertNoError(t, err)
 
 		got, err := taskList.GetAll()
-		if err != nil {
-			t.Fatal(err)
-		}
+		AssertNoError(t, err)
+
 		want := []planner.Task{{Id: 1, Name: "Task 1", Complete: false}}
 
 		if !reflect.DeepEqual(got, want) {
@@ -127,23 +112,17 @@ func TestTasks(t *testing.T) {
 		taskList.Add("Task 4")
 
 		tasks, err := taskList.GetAll()
-		if err != nil {
-			t.Fatal(err)
-		}
+		AssertNoError(t, err)
 
 		err = taskList.ToggleStatus(&tasks[0])
-		if err != nil {
-			t.Fatal(err)
-		}
+		AssertNoError(t, err)
+
 		err = taskList.ToggleStatus(&tasks[2])
-		if err != nil {
-			t.Fatal(err)
-		}
+		AssertNoError(t, err)
 
 		got, err := taskList.GetOutstanding()
-		if err != nil {
-			t.Fatal(err)
-		}
+		AssertNoError(t, err)
+
 		want := []planner.Task{
 			{Id: 2, Name: "Task 2", Complete: false},
 			{Id: 4, Name: "Task 4", Complete: false},
@@ -153,4 +132,11 @@ func TestTasks(t *testing.T) {
 			t.Errorf("got %+v, want %+v", got, want)
 		}
 	})
+}
+
+func AssertNoError(t testing.TB, err error) {
+	t.Helper()
+	if err != nil {
+		t.Fatal(err)
+	}
 }

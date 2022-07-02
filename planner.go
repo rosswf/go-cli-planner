@@ -20,8 +20,8 @@ type TaskList struct {
 	storage TaskStorage
 }
 
-func CreateTaskList(storage TaskStorage) (*TaskList, error) {
-	return &TaskList{storage: storage}, nil
+func CreateTaskList(storage TaskStorage) *TaskList {
+	return &TaskList{storage: storage}
 }
 
 func (t *TaskList) Add(name string) error {
@@ -45,6 +45,6 @@ func (t *TaskList) ToggleStatus(task *Task) error {
 	return nil
 }
 
-func (t TaskList) GetOutstanding() ([]Task, error) {
+func (t *TaskList) GetOutstanding() ([]Task, error) {
 	return t.storage.GetOutstanding()
 }
