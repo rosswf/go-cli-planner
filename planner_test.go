@@ -74,9 +74,7 @@ func TestTasks(t *testing.T) {
 
 		want := []planner.Task{{Id: 1, Name: "Task 1", Complete: false}}
 
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("got %#v, want %#v", got, want)
-		}
+		AssertTaskListsEqual(t, got, want)
 	})
 
 	t.Run("A task is marked as completed", func(t *testing.T) {
@@ -91,9 +89,7 @@ func TestTasks(t *testing.T) {
 
 		want := []planner.Task{{Id: 1, Name: "Task 1", Complete: true}}
 
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("got %+v, want %+v", got, want)
-		}
+		AssertTaskListsEqual(t, got, want)
 	})
 
 	t.Run("A task is marked as incomplete", func(t *testing.T) {
@@ -106,9 +102,7 @@ func TestTasks(t *testing.T) {
 
 		want := []planner.Task{{Id: 1, Name: "Task 1", Complete: false}}
 
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("got %+v, want %+v", got, want)
-		}
+		AssertTaskListsEqual(t, got, want)
 	})
 
 	t.Run("Test only show incomplete", func(t *testing.T) {
@@ -129,9 +123,7 @@ func TestTasks(t *testing.T) {
 			{Id: 4, Name: "Task 4", Complete: false},
 		}
 
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("got %+v, want %+v", got, want)
-		}
+		AssertTaskListsEqual(t, got, want)
 	})
 
 	t.Run("Delete a task", func(t *testing.T) {
@@ -149,9 +141,7 @@ func TestTasks(t *testing.T) {
 			{Id: 4, Name: "Task 4", Complete: false},
 		}
 
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("got %+v, want %+v", got, want)
-		}
+		AssertTaskListsEqual(t, got, want)
 	})
 }
 
@@ -160,24 +150,18 @@ func TestSqlite3TaskStorage(t *testing.T) {
 	AssertNoError(t, err)
 
 	t.Run("Add a new task to sqlite storage", func(t *testing.T) {
-		task := planner.Task{Name: "Task 1", Complete: false}
-
-		err := storage.Add(&task)
-		AssertNoError(t, err)
+		AddTaskToDB(t, storage, "Task 1", false)
 
 		got, err := storage.GetAll()
 		AssertNoError(t, err)
 
 		want := []planner.Task{{Id: 1, Name: "Task 1", Complete: false}}
 
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("got %+v, want %+v", got, want)
-		}
+		AssertTaskListsEqual(t, got, want)
 	})
 
 	t.Run("Get a single task by ID", func(t *testing.T) {
-		task := planner.Task{Name: "Task 2", Complete: true}
-		storage.Add(&task)
+		AddTaskToDB(t, storage, "Task 2", true)
 
 		got, err := storage.GetTask(2)
 		AssertNoError(t, err)
@@ -203,13 +187,8 @@ func TestSqlite3TaskStorage(t *testing.T) {
 	})
 
 	t.Run("Get oustanding tasks", func(t *testing.T) {
-		task := planner.Task{Name: "Task 3", Complete: false}
-		err := storage.Add(&task)
-		AssertNoError(t, err)
-
-		task = planner.Task{Name: "Task 4", Complete: false}
-		err = storage.Add(&task)
-		AssertNoError(t, err)
+		AddTaskToDB(t, storage, "Task 3", false)
+		AddTaskToDB(t, storage, "Task 4", false)
 
 		got, err := storage.GetOutstanding()
 		AssertNoError(t, err)
@@ -219,9 +198,7 @@ func TestSqlite3TaskStorage(t *testing.T) {
 			{Id: 4, Name: "Task 4", Complete: false},
 		}
 
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("got %+v, want %+v", got, want)
-		}
+		AssertTaskListsEqual(t, got, want)
 	})
 }
 
@@ -230,4 +207,19 @@ func AssertNoError(t testing.TB, err error) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func AssertTaskListsEqual(t testing.TB, got []planner.Task, want []planner.Task) {
+	t.Helper()
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got %+v, want %+v", got, want)
+	}
+}
+
+func AddTaskToDB(t testing.TB, storage *storage.Sqlite3TaskStorage, name string, status bool) {
+	t.Helper()
+	task := planner.Task{Name: name, Complete: status}
+	err := storage.Add(&task)
+	AssertNoError(t, err)
+
 }
