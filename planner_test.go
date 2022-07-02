@@ -201,6 +201,28 @@ func TestSqlite3TaskStorage(t *testing.T) {
 			t.Errorf("got %+v, want %+v", got, want)
 		}
 	})
+
+	t.Run("Get oustanding tasks", func(t *testing.T) {
+		task := planner.Task{Name: "Task 3", Complete: false}
+		err := storage.Add(&task)
+		AssertNoError(t, err)
+
+		task = planner.Task{Name: "Task 4", Complete: false}
+		err = storage.Add(&task)
+		AssertNoError(t, err)
+
+		got, err := storage.GetOutstanding()
+		AssertNoError(t, err)
+
+		want := []planner.Task{
+			{Id: 3, Name: "Task 3", Complete: false},
+			{Id: 4, Name: "Task 4", Complete: false},
+		}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %+v, want %+v", got, want)
+		}
+	})
 }
 
 func AssertNoError(t testing.TB, err error) {

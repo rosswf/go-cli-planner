@@ -73,7 +73,6 @@ func (s *Sqlite3TaskStorage) ToggleStatus(id planner.TaskId) error {
 	if err != nil {
 		return err
 	}
-
 	stmt, err := tx.Prepare("UPDATE tasks SET complete = CASE WHEN complete = true THEN false ELSE true END WHERE id=?")
 	if err != nil {
 		return err
@@ -84,7 +83,6 @@ func (s *Sqlite3TaskStorage) ToggleStatus(id planner.TaskId) error {
 	if err != nil {
 		return err
 	}
-
 	err = tx.Commit()
 	if err != nil {
 		return err
@@ -94,7 +92,19 @@ func (s *Sqlite3TaskStorage) ToggleStatus(id planner.TaskId) error {
 }
 
 func (s *Sqlite3TaskStorage) GetOutstanding() ([]planner.Task, error) {
-	return []planner.Task{}, nil
+	tasks := []planner.Task{}
+	rows, err := s.conn.Query("SELECT * FROM tasks WHERE complete = false")
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var id planner.TaskId
+		var name string
+		var complete bool
+		_ = rows.Scan(&id, &name, &complete)
+		tasks = append(tasks, planner.Task{Id: id, Name: name, Complete: complete})
+	}
+	return tasks, nil
 }
 
 func (s *Sqlite3TaskStorage) Delete(id planner.TaskId) error {
