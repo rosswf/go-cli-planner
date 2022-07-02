@@ -49,6 +49,12 @@ func (m *MockTaskStorage) GetOutstanding() ([]planner.Task, error) {
 	return outstanding, nil
 }
 
+func (m *MockTaskStorage) Delete(id planner.TaskId) error {
+	id-- // slice is 0 indexed
+	m.taskList = append(m.taskList[:id], m.taskList[id+1:]...)
+	return nil
+}
+
 func CreateMockStorage() *MockTaskStorage {
 	return &MockTaskStorage{}
 }
@@ -91,13 +97,11 @@ func TestTasks(t *testing.T) {
 
 	t.Run("A task is marked as incomplete", func(t *testing.T) {
 		tasks, err := taskList.GetAll()
-		AssertNoError(t, err)
 
 		err = taskList.ToggleStatus(&tasks[0])
 		AssertNoError(t, err)
 
 		got, err := taskList.GetAll()
-		AssertNoError(t, err)
 
 		want := []planner.Task{{Id: 1, Name: "Task 1", Complete: false}}
 
@@ -112,19 +116,35 @@ func TestTasks(t *testing.T) {
 		taskList.Add("Task 4")
 
 		tasks, err := taskList.GetAll()
-		AssertNoError(t, err)
 
 		err = taskList.ToggleStatus(&tasks[0])
-		AssertNoError(t, err)
-
 		err = taskList.ToggleStatus(&tasks[2])
-		AssertNoError(t, err)
 
 		got, err := taskList.GetOutstanding()
 		AssertNoError(t, err)
 
 		want := []planner.Task{
 			{Id: 2, Name: "Task 2", Complete: false},
+			{Id: 4, Name: "Task 4", Complete: false},
+		}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got %+v, want %+v", got, want)
+		}
+	})
+
+	t.Run("Delete a task", func(t *testing.T) {
+		tasks, err := taskList.GetAll()
+
+		err = taskList.Delete(&tasks[1])
+		AssertNoError(t, err)
+
+		got, err := taskList.GetAll()
+		AssertNoError(t, err)
+
+		want := []planner.Task{
+			{Id: 1, Name: "Task 1", Complete: true},
+			{Id: 3, Name: "Task 3", Complete: true},
 			{Id: 4, Name: "Task 4", Complete: false},
 		}
 

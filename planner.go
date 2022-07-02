@@ -6,6 +6,7 @@ type TaskStorage interface {
 	GetTask(TaskId) (*Task, error)
 	ToggleStatus(TaskId) error
 	GetOutstanding() ([]Task, error)
+	Delete(TaskId) error
 }
 
 type TaskId int64
@@ -47,4 +48,9 @@ func (t *TaskList) ToggleStatus(task *Task) error {
 
 func (t *TaskList) GetOutstanding() ([]Task, error) {
 	return t.storage.GetOutstanding()
+}
+
+func (t *TaskList) Delete(task *Task) error {
+	err := t.storage.Delete(task.Id)
+	return err
 }
