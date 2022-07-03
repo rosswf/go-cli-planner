@@ -10,18 +10,18 @@ import (
 )
 
 type model struct {
-	tasks     []planner.Task
-	storage   planner.TaskList
-	cursor    int
-	taskInput string
-	toggle    bool
+	tasks       []planner.Task
+	taskStorage planner.TaskList
+	cursor      int
+	taskInput   string
+	toggle      bool
 }
 
 func initialModel(taskList *planner.TaskList) model {
 	tasks, _ := taskList.GetAll()
 	return model{
-		tasks:   tasks,
-		storage: *taskList,
+		tasks:       tasks,
+		taskStorage: *taskList,
 	}
 }
 
@@ -38,7 +38,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "enter":
 			if m.taskInput != "" {
-				m.storage.Add(m.taskInput)
+				m.taskStorage.Add(m.taskInput)
 				m.taskInput = ""
 			}
 
@@ -51,9 +51,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.cursor < len(m.tasks)-1 {
 				m.cursor++
 			}
-
 		case "left", "right":
-			if err := m.storage.ToggleStatus(&m.tasks[m.cursor]); err != nil {
+			if len(m.tasks) == 0 {
+				break
+			}
+			if err := m.taskStorage.ToggleStatus(&m.tasks[m.cursor]); err != nil {
 				fmt.Println(err)
 			}
 		case "tab":
@@ -73,9 +75,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	}
 	if m.toggle {
-		m.tasks, _ = m.storage.GetAll()
+		m.tasks, _ = m.taskStorage.GetAll()
 	} else {
-		m.tasks, _ = m.storage.GetOutstanding()
+		m.tasks, _ = m.taskStorage.GetOutstanding()
+	}
+	if m.cursor > len(m.tasks)-1 {
+		m.cursor = 0
 	}
 	return m, nil
 }
