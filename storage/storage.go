@@ -14,7 +14,7 @@ type Sqlite3TaskStorage struct {
 func CreateSqlite3TaskStorage(location string) (*Sqlite3TaskStorage, error) {
 	db, err := sql.Open("sqlite3", location)
 	if err != nil {
-		return &Sqlite3TaskStorage{}, err
+		return nil, err
 	}
 	sqlStmt := `CREATE TABLE IF NOT EXISTS tasks
 (id INTEGER not null primary key, name TEXT, complete BOOL);`
@@ -89,7 +89,10 @@ func (s *Sqlite3TaskStorage) GetOutstanding() ([]planner.Task, error) {
 		var id planner.TaskId
 		var name string
 		var complete bool
-		_ = rows.Scan(&id, &name, &complete)
+		err = rows.Scan(&id, &name, &complete)
+		if err != nil {
+			return nil, err
+		}
 		tasks = append(tasks, planner.Task{Id: id, Name: name, Complete: complete})
 	}
 	return tasks, nil
