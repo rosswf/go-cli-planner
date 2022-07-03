@@ -5,19 +5,19 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
-	planner "github.com/rosswf/go-cli-planner"
-	storage "github.com/rosswf/go-cli-planner/storage"
+	todo "github.com/rosswf/go-todo-cli"
+	storage "github.com/rosswf/go-todo-cli/storage"
 )
 
 type model struct {
-	tasks       []planner.Task
-	taskStorage planner.TaskList
+	tasks       []todo.Task
+	taskStorage todo.TaskList
 	cursor      int
 	taskInput   string
 	toggle      bool
 }
 
-func initialModel(taskList *planner.TaskList) model {
+func initialModel(taskList *todo.TaskList) model {
 	tasks, _ := taskList.GetAll()
 	return model{
 		tasks:       tasks,
@@ -121,7 +121,7 @@ Press ctrl+c to quit.`
 func main() {
 	storage, _ := storage.CreateSqlite3TaskStorage("tasks.db")
 
-	taskList := planner.CreateTaskList(storage)
+	taskList := todo.CreateTaskList(storage)
 
 	p := tea.NewProgram(initialModel(taskList))
 	if err := p.Start(); err != nil {

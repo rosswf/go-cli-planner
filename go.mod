@@ -1,4 +1,4 @@
-module github.com/rosswf/go-cli-planner
+module github.com/rosswf/go-todo-cli
 
 go 1.18
 

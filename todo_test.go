@@ -1,30 +1,30 @@
-package planner_test
+package todo_test
 
 import (
 	"reflect"
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
-	planner "github.com/rosswf/go-cli-planner"
-	storage "github.com/rosswf/go-cli-planner/storage"
+	todo "github.com/rosswf/go-todo-cli"
+	storage "github.com/rosswf/go-todo-cli/storage"
 )
 
 type MockTaskStorage struct {
-	taskList []planner.Task
+	taskList []todo.Task
 }
 
-func (m *MockTaskStorage) Add(task *planner.Task) error {
+func (m *MockTaskStorage) Add(task *todo.Task) error {
 	id := len(m.taskList) + 1
-	task.Id = planner.TaskId(id)
+	task.Id = todo.TaskId(id)
 	m.taskList = append(m.taskList, *task)
 	return nil
 }
 
-func (m *MockTaskStorage) GetAll() ([]planner.Task, error) {
+func (m *MockTaskStorage) GetAll() ([]todo.Task, error) {
 	return m.taskList, nil
 }
 
-func (m *MockTaskStorage) ToggleStatus(id planner.TaskId) error {
+func (m *MockTaskStorage) ToggleStatus(id todo.TaskId) error {
 	task, _ := m.GetTask(id)
 	if task.Complete {
 		task.Complete = false
@@ -34,13 +34,13 @@ func (m *MockTaskStorage) ToggleStatus(id planner.TaskId) error {
 	return nil
 }
 
-func (m *MockTaskStorage) GetTask(id planner.TaskId) (*planner.Task, error) {
+func (m *MockTaskStorage) GetTask(id todo.TaskId) (*todo.Task, error) {
 	id-- // slice is 0 indexed
 	return &m.taskList[id], nil
 }
 
-func (m *MockTaskStorage) GetOutstanding() ([]planner.Task, error) {
-	outstanding := make([]planner.Task, 0)
+func (m *MockTaskStorage) GetOutstanding() ([]todo.Task, error) {
+	outstanding := make([]todo.Task, 0)
 
 	for _, task := range m.taskList {
 		if !task.Complete {
@@ -50,7 +50,7 @@ func (m *MockTaskStorage) GetOutstanding() ([]planner.Task, error) {
 	return outstanding, nil
 }
 
-func (m *MockTaskStorage) Delete(id planner.TaskId) error {
+func (m *MockTaskStorage) Delete(id todo.TaskId) error {
 	id-- // slice is 0 indexed
 	m.taskList = append(m.taskList[:id], m.taskList[id+1:]...)
 	return nil
@@ -63,7 +63,7 @@ func CreateMockStorage() *MockTaskStorage {
 func TestTasks(t *testing.T) {
 	storage := CreateMockStorage()
 
-	taskList := planner.CreateTaskList(storage)
+	taskList := todo.CreateTaskList(storage)
 
 	t.Run("A task is added to the task list", func(t *testing.T) {
 		err := taskList.Add("Task 1")
@@ -72,7 +72,7 @@ func TestTasks(t *testing.T) {
 		got, err := taskList.GetAll()
 		AssertNoError(t, err)
 
-		want := []planner.Task{{Id: 1, Name: "Task 1", Complete: false}}
+		want := []todo.Task{{Id: 1, Name: "Task 1", Complete: false}}
 
 		AssertTaskListsEqual(t, got, want)
 	})
@@ -87,7 +87,7 @@ func TestTasks(t *testing.T) {
 		got, err := taskList.GetAll()
 		AssertNoError(t, err)
 
-		want := []planner.Task{{Id: 1, Name: "Task 1", Complete: true}}
+		want := []todo.Task{{Id: 1, Name: "Task 1", Complete: true}}
 
 		AssertTaskListsEqual(t, got, want)
 	})
@@ -100,7 +100,7 @@ func TestTasks(t *testing.T) {
 
 		got, _ := taskList.GetAll()
 
-		want := []planner.Task{{Id: 1, Name: "Task 1", Complete: false}}
+		want := []todo.Task{{Id: 1, Name: "Task 1", Complete: false}}
 
 		AssertTaskListsEqual(t, got, want)
 	})
@@ -118,7 +118,7 @@ func TestTasks(t *testing.T) {
 		got, err := taskList.GetOutstanding()
 		AssertNoError(t, err)
 
-		want := []planner.Task{
+		want := []todo.Task{
 			{Id: 2, Name: "Task 2", Complete: false},
 			{Id: 4, Name: "Task 4", Complete: false},
 		}
@@ -135,7 +135,7 @@ func TestTasks(t *testing.T) {
 		got, _ := taskList.GetAll()
 		AssertNoError(t, err)
 
-		want := []planner.Task{
+		want := []todo.Task{
 			{Id: 1, Name: "Task 1", Complete: true},
 			{Id: 3, Name: "Task 3", Complete: true},
 			{Id: 4, Name: "Task 4", Complete: false},
@@ -155,7 +155,7 @@ func TestSqlite3TaskStorage(t *testing.T) {
 		got, err := storage.GetAll()
 		AssertNoError(t, err)
 
-		want := []planner.Task{{Id: 1, Name: "Task 1", Complete: false}}
+		want := []todo.Task{{Id: 1, Name: "Task 1", Complete: false}}
 
 		AssertTaskListsEqual(t, got, want)
 	})
@@ -166,7 +166,7 @@ func TestSqlite3TaskStorage(t *testing.T) {
 		got, err := storage.GetTask(2)
 		AssertNoError(t, err)
 
-		want := &planner.Task{Id: 2, Name: "Task 2", Complete: true}
+		want := &todo.Task{Id: 2, Name: "Task 2", Complete: true}
 
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got %+v, want %+v", got, want)
@@ -179,7 +179,7 @@ func TestSqlite3TaskStorage(t *testing.T) {
 
 		got, _ := storage.GetTask(1)
 
-		want := &planner.Task{Id: 1, Name: "Task 1", Complete: true}
+		want := &todo.Task{Id: 1, Name: "Task 1", Complete: true}
 
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got %+v, want %+v", got, want)
@@ -193,7 +193,7 @@ func TestSqlite3TaskStorage(t *testing.T) {
 		got, err := storage.GetOutstanding()
 		AssertNoError(t, err)
 
-		want := []planner.Task{
+		want := []todo.Task{
 			{Id: 3, Name: "Task 3", Complete: false},
 			{Id: 4, Name: "Task 4", Complete: false},
 		}
@@ -207,7 +207,7 @@ func TestSqlite3TaskStorage(t *testing.T) {
 
 		got, _ := storage.GetAll()
 
-		want := []planner.Task{
+		want := []todo.Task{
 			{Id: 1, Name: "Task 1", Complete: true},
 			{Id: 3, Name: "Task 3", Complete: false},
 			{Id: 4, Name: "Task 4", Complete: false},
@@ -224,7 +224,7 @@ func AssertNoError(t testing.TB, err error) {
 	}
 }
 
-func AssertTaskListsEqual(t testing.TB, got []planner.Task, want []planner.Task) {
+func AssertTaskListsEqual(t testing.TB, got []todo.Task, want []todo.Task) {
 	t.Helper()
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %+v, want %+v", got, want)
@@ -233,7 +233,7 @@ func AssertTaskListsEqual(t testing.TB, got []planner.Task, want []planner.Task)
 
 func AddTaskToDB(t testing.TB, storage *storage.Sqlite3TaskStorage, name string, status bool) {
 	t.Helper()
-	task := planner.Task{Name: name, Complete: status}
+	task := todo.Task{Name: name, Complete: status}
 	err := storage.Add(&task)
 	AssertNoError(t, err)
 }

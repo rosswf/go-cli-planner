@@ -1,10 +1,10 @@
-package planner_storage
+package todo_storage
 
 import (
 	"database/sql"
 
 	_ "github.com/mattn/go-sqlite3"
-	planner "github.com/rosswf/go-cli-planner"
+	todo "github.com/rosswf/go-todo-cli"
 )
 
 type Sqlite3TaskStorage struct {
@@ -30,7 +30,7 @@ func (s *Sqlite3TaskStorage) Close() {
 	s.conn.Close()
 }
 
-func (s *Sqlite3TaskStorage) Add(task *planner.Task) error {
+func (s *Sqlite3TaskStorage) Add(task *todo.Task) error {
 	sqlStmt := "INSERT INTO tasks(name, complete) values(?, ?)"
 	_, err := s.conn.Exec(sqlStmt, task.Name, task.Complete)
 	if err != nil {
@@ -39,36 +39,36 @@ func (s *Sqlite3TaskStorage) Add(task *planner.Task) error {
 	return err
 }
 
-func (s *Sqlite3TaskStorage) GetAll() ([]planner.Task, error) {
-	tasks := []planner.Task{}
+func (s *Sqlite3TaskStorage) GetAll() ([]todo.Task, error) {
+	tasks := []todo.Task{}
 	rows, err := s.conn.Query("SELECT * FROM tasks")
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
-		var id planner.TaskId
+		var id todo.TaskId
 		var name string
 		var complete bool
 		_ = rows.Scan(&id, &name, &complete)
-		tasks = append(tasks, planner.Task{Id: id, Name: name, Complete: complete})
+		tasks = append(tasks, todo.Task{Id: id, Name: name, Complete: complete})
 	}
 	return tasks, nil
 }
 
-func (s *Sqlite3TaskStorage) GetTask(id planner.TaskId) (*planner.Task, error) {
+func (s *Sqlite3TaskStorage) GetTask(id todo.TaskId) (*todo.Task, error) {
 	row := s.conn.QueryRow("SELECT * FROM tasks WHERE id = ?", id)
 
-	var taskId planner.TaskId
+	var taskId todo.TaskId
 	var name string
 	var complete bool
 	err := row.Scan(&taskId, &name, &complete)
 	if err != nil {
 		return nil, err
 	}
-	return &planner.Task{Id: taskId, Name: name, Complete: complete}, nil
+	return &todo.Task{Id: taskId, Name: name, Complete: complete}, nil
 }
 
-func (s *Sqlite3TaskStorage) ToggleStatus(id planner.TaskId) error {
+func (s *Sqlite3TaskStorage) ToggleStatus(id todo.TaskId) error {
 	sqlStmt := `UPDATE tasks SET complete = CASE WHEN complete = true 
 THEN false ELSE true END WHERE id=?`
 
@@ -79,26 +79,26 @@ THEN false ELSE true END WHERE id=?`
 	return nil
 }
 
-func (s *Sqlite3TaskStorage) GetOutstanding() ([]planner.Task, error) {
-	tasks := []planner.Task{}
+func (s *Sqlite3TaskStorage) GetOutstanding() ([]todo.Task, error) {
+	tasks := []todo.Task{}
 	rows, err := s.conn.Query("SELECT * FROM tasks WHERE complete = false")
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
-		var id planner.TaskId
+		var id todo.TaskId
 		var name string
 		var complete bool
 		err = rows.Scan(&id, &name, &complete)
 		if err != nil {
 			return nil, err
 		}
-		tasks = append(tasks, planner.Task{Id: id, Name: name, Complete: complete})
+		tasks = append(tasks, todo.Task{Id: id, Name: name, Complete: complete})
 	}
 	return tasks, nil
 }
 
-func (s *Sqlite3TaskStorage) Delete(id planner.TaskId) error {
+func (s *Sqlite3TaskStorage) Delete(id todo.TaskId) error {
 	sqlStmt := "DELETE FROM tasks WHERE id=?"
 	_, err := s.conn.Exec(sqlStmt, id)
 	if err != nil {
