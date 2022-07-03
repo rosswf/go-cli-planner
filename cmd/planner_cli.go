@@ -111,7 +111,7 @@ func (m model) View() string {
 	}
 
 	s += fmt.Sprintf("\nAdd a new task > %s█\n\n", m.taskInput)
-	s += `Navigation: ^ v. Mark Complete <- ->.
+	s += `Navigation: ^ v. Mark Complete < >.
 Tab to toggle full list and outstanding.
 Press ctrl+c to quit.`
 
