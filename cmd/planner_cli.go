@@ -86,25 +86,34 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	s := "Here is your task list:\n\n"
+	status := map[bool]string{true: "full", false: "outstanding"}
 
-	for i, choice := range m.tasks {
+	s := fmt.Sprintf("Here is your task %s list:\n\n", status[m.toggle])
 
-		cursor := " "
-		if m.cursor == i {
-			cursor = ">"
+	if len(m.tasks) == 0 {
+		s += "Congratulations! You have no tasks!\n"
+	} else {
+
+		for i, choice := range m.tasks {
+
+			cursor := " "
+			if m.cursor == i {
+				cursor = ">"
+			}
+
+			complete := "✖"
+			if choice.Complete {
+				complete = "✓"
+			}
+
+			s += fmt.Sprintf("%s %s %s\n", cursor, complete, choice.Name)
 		}
-
-		complete := "✖"
-		if choice.Complete {
-			complete = "✓"
-		}
-
-		s += fmt.Sprintf("%s %s %s\n", cursor, complete, choice.Name)
 	}
 
-	s += fmt.Sprintf("\nAdd a new task > %s█", m.taskInput)
-	s += "\nPress tab to mark completed. Press ctrl+c to quit.\n"
+	s += fmt.Sprintf("\nAdd a new task > %s█\n\n", m.taskInput)
+	s += `Navigation: ^ v. Mark Complete <- ->.
+Tab to toggle full list and outstanding.
+Press ctrl+c to quit.`
 
 	return s
 }
