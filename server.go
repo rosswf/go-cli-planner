@@ -26,6 +26,7 @@ func NewTaskServer(taskList *TaskList) *TaskServer {
 	r.Route("/tasks", func(r chi.Router) {
 		r.Use(setJsonContentType)
 		r.Get("/", p.tasksHandler)
+		r.Post("/", p.newTaskHandler)
 		r.Get("/incomplete", p.incompleteHandler)
 		r.Get("/{taskID:^[1-9][0-9]*}", p.taskHandler)
 	})
@@ -86,6 +87,23 @@ func (p *TaskServer) taskHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Could not encode json %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
+	}
+}
+
+func (p *TaskServer) newTaskHandler(w http.ResponseWriter, r *http.Request) {
+	var task Task
+	err := json.NewDecoder(r.Body).Decode(&task)
+
+	if err != nil {
+		log.Printf("Could not decode json %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusAccepted)
+
+	err = p.taskList.Add(task.Name)
+	if err != nil {
+		log.Printf("Could not add task %v, %v", task, err)
 	}
 }
 

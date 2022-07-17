@@ -99,6 +99,42 @@ func TestGETTasks(t *testing.T) {
 	})
 }
 
+func TestPOSTTasks(t *testing.T) {
+	data := []todo.Task{}
+
+	storage := CreateMockStorage(data)
+	taskList := todo.CreateTaskList(storage)
+	server := todo.NewTaskServer(taskList)
+
+	t.Run("test POST to /task adds a task", func(t *testing.T) {
+		jsonData := []byte(`{"Name": "New Task"}`)
+
+		request, _ := http.NewRequest(http.MethodPost, "/tasks", bytes.NewBuffer(jsonData))
+		request.Header.Set("content-type", "application/json")
+
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+		assertStatus(t, response.Code, http.StatusAccepted)
+
+		// Get all
+		request, _ = http.NewRequest(http.MethodGet, "/tasks", nil)
+		response = httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusOK)
+
+		got := decodeTaskList(t, response.Body)
+		want := []todo.Task{{Id: 1, Name: "New Task", Complete: false}}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got response %+v, want %+v", got, want)
+		}
+	})
+
+}
+
 func assertJSONContentType(t testing.TB, response *httptest.ResponseRecorder) {
 	t.Helper()
 
