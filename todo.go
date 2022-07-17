@@ -54,3 +54,13 @@ func (t *TaskList) Delete(task *Task) error {
 	err := t.storage.Delete(task.Id)
 	return err
 }
+
+func (t *TaskList) GetOne(id TaskId) (Task, error) {
+	task, err := t.storage.GetTask(id)
+
+	if err != nil {
+		return *task, err
+	}
+
+	return *task, nil
+}

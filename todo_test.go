@@ -1,6 +1,7 @@
 package todo_test
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 
@@ -25,7 +26,10 @@ func (m *MockTaskStorage) GetAll() ([]todo.Task, error) {
 }
 
 func (m *MockTaskStorage) ToggleStatus(id todo.TaskId) error {
-	task, _ := m.GetTask(id)
+	task, err := m.GetTask(id)
+	if err != nil {
+		return err
+	}
 	if task.Complete {
 		task.Complete = false
 	} else {
@@ -35,8 +39,12 @@ func (m *MockTaskStorage) ToggleStatus(id todo.TaskId) error {
 }
 
 func (m *MockTaskStorage) GetTask(id todo.TaskId) (*todo.Task, error) {
-	id-- // slice is 0 indexed
-	return &m.taskList[id], nil
+	for i, task := range m.taskList {
+		if task.Id == id {
+			return &m.taskList[i], nil
+		}
+	}
+	return nil, errors.New("Task not found")
 }
 
 func (m *MockTaskStorage) GetOutstanding() ([]todo.Task, error) {
@@ -142,6 +150,21 @@ func TestTasks(t *testing.T) {
 		}
 
 		AssertTaskListsEqual(t, got, want)
+	})
+
+	t.Run("Get a task", func(t *testing.T) {
+		task, err := taskList.GetOne(3)
+
+		AssertNoError(t, err)
+
+		want := todo.Task{
+			Id: 3, Name: "Task 3", Complete: true,
+		}
+
+		if task != want {
+			t.Errorf("got %v, want %v", task, want)
+		}
+
 	})
 }
 
