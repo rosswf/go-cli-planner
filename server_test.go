@@ -1,6 +1,7 @@
 package todo_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -20,7 +21,7 @@ func TestGETTasks(t *testing.T) {
 		{
 			Id:       2,
 			Name:     "Task 2",
-			Complete: false,
+			Complete: true,
 		},
 	}
 
@@ -28,37 +29,38 @@ func TestGETTasks(t *testing.T) {
 	taskList := todo.CreateTaskList(storage)
 	server := todo.NewTaskServer(taskList)
 
-	t.Run("test /tasks returns status 200", func(t *testing.T) {
-		request, _ := http.NewRequest(http.MethodGet, "/tasks", nil)
-		response := httptest.NewRecorder()
-
-		server.ServeHTTP(response, request)
-
-		got := response.Code
-		want := http.StatusOK
-
-		if got != want {
-			t.Errorf("got status %d, want %d", got, want)
-		}
-	})
-
 	t.Run("test /tasks returns a list of tasks", func(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/tasks", nil)
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
 
-		var got []todo.Task
-		err := json.NewDecoder(response.Body).Decode(&got)
+		assertStatus(t, response.Code, http.StatusOK)
 
-		if err != nil {
-			t.Fatalf("Could not decode json, %v", err)
-		}
-
+		got := decodeTaskList(t, response.Body)
 		want := data
 
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got response %+v, want %+v", got, want)
 		}
 	})
+
+}
+
+func assertStatus(t testing.TB, got, want int) {
+	t.Helper()
+
+	if got != want {
+		t.Fatalf("got status %d, want %d", got, want)
+	}
+}
+
+func decodeTaskList(t testing.TB, taskList *bytes.Buffer) []todo.Task {
+	var got []todo.Task
+	err := json.NewDecoder(taskList).Decode(&got)
+
+	if err != nil {
+		t.Fatalf("Could not decode json, %v", err)
+	}
+	return got
 }
