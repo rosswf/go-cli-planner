@@ -38,6 +38,7 @@ func (p *TaskServer) tasksHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Could not get tasks %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	writeJSON(w, tasks)
@@ -48,6 +49,7 @@ func (p *TaskServer) incompleteHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Could not get tasks %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	writeJSON(w, tasks)
@@ -59,6 +61,7 @@ func (p *TaskServer) taskHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Invalid taskID given %v", err)
 		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 	taskId := TaskId(id)
 
@@ -66,6 +69,7 @@ func (p *TaskServer) taskHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Could not get task with id %d, %v", taskId, err)
 		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	err = json.NewEncoder(w).Encode(task)
@@ -73,6 +77,7 @@ func (p *TaskServer) taskHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Could not encoide json %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -83,5 +88,6 @@ func writeJSON(w http.ResponseWriter, tasks []Task) {
 	if err != nil {
 		log.Printf("Could not encode json %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 }

@@ -59,7 +59,7 @@ func (t *TaskList) GetOne(id TaskId) (Task, error) {
 	task, err := t.storage.GetTask(id)
 
 	if err != nil {
-		return *task, err
+		return Task{}, err
 	}
 
 	return *task, nil
