@@ -24,6 +24,7 @@ func NewTaskServer(taskList *TaskList) *TaskServer {
 	r.Use(middleware.Logger)
 
 	r.Route("/tasks", func(r chi.Router) {
+		r.Use(setJsonContentType)
 		r.Get("/", p.tasksHandler)
 		r.Get("/incomplete", p.incompleteHandler)
 		r.Get("/{taskID:^[1-9][0-9]*}", p.taskHandler)
@@ -31,6 +32,13 @@ func NewTaskServer(taskList *TaskList) *TaskServer {
 
 	p.Handler = r
 	return p
+}
+
+func setJsonContentType(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("content-type", "application/json")
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (p *TaskServer) tasksHandler(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +68,7 @@ func (p *TaskServer) taskHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
 		log.Printf("Invalid taskID given %v", err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 	taskId := TaskId(id)
@@ -68,14 +76,14 @@ func (p *TaskServer) taskHandler(w http.ResponseWriter, r *http.Request) {
 	task, err := p.taskList.GetOne(taskId)
 	if err != nil {
 		log.Printf("Could not get task with id %d, %v", taskId, err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	err = json.NewEncoder(w).Encode(task)
 
 	if err != nil {
-		log.Printf("Could not encoide json %v", err)
+		log.Printf("Could not encode json %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

@@ -52,6 +52,7 @@ func TestGETTasks(t *testing.T) {
 		server.ServeHTTP(response, request)
 
 		assertStatus(t, response.Code, http.StatusOK)
+		assertJSONContentType(t, response)
 
 		got := decodeTaskList(t, response.Body)
 		want := []todo.Task{
@@ -74,6 +75,7 @@ func TestGETTasks(t *testing.T) {
 		server.ServeHTTP(response, request)
 
 		assertStatus(t, response.Code, http.StatusOK)
+		assertJSONContentType(t, response)
 
 		got := decodeTask(t, response.Body)
 		want := todo.Task{
@@ -97,6 +99,14 @@ func TestGETTasks(t *testing.T) {
 	})
 }
 
+func assertJSONContentType(t testing.TB, response *httptest.ResponseRecorder) {
+	t.Helper()
+
+	if response.Result().Header.Get("content-type") != "application/json" {
+		t.Errorf("response did not have content-type of application/json, got %v", response.Result().Header)
+	}
+}
+
 func assertStatus(t testing.TB, got, want int) {
 	t.Helper()
 
@@ -106,6 +116,7 @@ func assertStatus(t testing.TB, got, want int) {
 }
 
 func decodeTaskList(t testing.TB, taskList *bytes.Buffer) []todo.Task {
+	t.Helper()
 	var got []todo.Task
 	err := json.NewDecoder(taskList).Decode(&got)
 
@@ -116,6 +127,7 @@ func decodeTaskList(t testing.TB, taskList *bytes.Buffer) []todo.Task {
 }
 
 func decodeTask(t testing.TB, task *bytes.Buffer) todo.Task {
+	t.Helper()
 	var got todo.Task
 	err := json.NewDecoder(task).Decode(&got)
 
