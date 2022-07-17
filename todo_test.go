@@ -56,12 +56,12 @@ func (m *MockTaskStorage) Delete(id todo.TaskId) error {
 	return nil
 }
 
-func CreateMockStorage() *MockTaskStorage {
-	return &MockTaskStorage{}
+func CreateMockStorage(data []todo.Task) *MockTaskStorage {
+	return &MockTaskStorage{data}
 }
 
 func TestTasks(t *testing.T) {
-	storage := CreateMockStorage()
+	storage := CreateMockStorage([]todo.Task{})
 
 	taskList := todo.CreateTaskList(storage)
 

@@ -9,7 +9,20 @@ import (
 )
 
 func TestGETTasks(t *testing.T) {
-	storage := CreateMockStorage()
+	data := []todo.Task{
+		{
+			Id:       1,
+			Name:     "Task 1",
+			Complete: false,
+		},
+		{
+			Id:       2,
+			Name:     "Task 2",
+			Complete: false,
+		},
+	}
+
+	storage := CreateMockStorage(data)
 	taskList := todo.CreateTaskList(storage)
 	server := todo.NewTaskServer(taskList)
 
