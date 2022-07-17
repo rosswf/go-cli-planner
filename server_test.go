@@ -11,21 +11,21 @@ import (
 	"github.com/rosswf/go-todo-cli"
 )
 
-func TestGETTasks(t *testing.T) {
-	data := []todo.Task{
-		{
-			Id:       1,
-			Name:     "Task 1",
-			Complete: false,
-		},
-		{
-			Id:       2,
-			Name:     "Task 2",
-			Complete: true,
-		},
-	}
+var dummyData = []todo.Task{
+	{
+		Id:       1,
+		Name:     "Task 1",
+		Complete: false,
+	},
+	{
+		Id:       2,
+		Name:     "Task 2",
+		Complete: true,
+	},
+}
 
-	storage := CreateMockStorage(data)
+func TestGETTasks(t *testing.T) {
+	storage := CreateMockStorage(dummyData)
 	taskList := todo.CreateTaskList(storage)
 	server := todo.NewTaskServer(taskList)
 
@@ -38,7 +38,7 @@ func TestGETTasks(t *testing.T) {
 		assertStatus(t, response.Code, http.StatusOK)
 
 		got := decodeTaskList(t, response.Body)
-		want := data
+		want := dummyData
 
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got response %+v, want %+v", got, want)
@@ -106,7 +106,7 @@ func TestPOSTTasks(t *testing.T) {
 	taskList := todo.CreateTaskList(storage)
 	server := todo.NewTaskServer(taskList)
 
-	t.Run("test POST to /task adds a task", func(t *testing.T) {
+	t.Run("test POST to /tasks adds a task", func(t *testing.T) {
 		jsonData := []byte(`{"Name": "New Task"}`)
 
 		request, _ := http.NewRequest(http.MethodPost, "/tasks", bytes.NewBuffer(jsonData))
@@ -127,6 +127,29 @@ func TestPOSTTasks(t *testing.T) {
 
 		got := decodeTaskList(t, response.Body)
 		want := []todo.Task{{Id: 1, Name: "New Task", Complete: false}}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got response %+v, want %+v", got, want)
+		}
+	})
+
+	t.Run("test POST to /tasks/1 marks a task as complete", func(t *testing.T) {
+		request, _ := http.NewRequest(http.MethodPost, "/tasks/1", nil)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+		assertStatus(t, response.Code, http.StatusAccepted)
+
+		// Get all
+		request, _ = http.NewRequest(http.MethodGet, "/tasks", nil)
+		response = httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusOK)
+
+		got := decodeTaskList(t, response.Body)
+		want := []todo.Task{{Id: 1, Name: "New Task", Complete: true}}
 
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got response %+v, want %+v", got, want)
