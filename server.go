@@ -1,6 +1,10 @@
 package todo
 
-import "net/http"
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+)
 
 type TaskServer struct {
 	taskList *TaskList
@@ -20,5 +24,11 @@ func NewTaskServer(taskList *TaskList) *TaskServer {
 }
 
 func (p *TaskServer) tasksHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
+	tasks, _ := p.taskList.GetAll()
+
+	encoder := json.NewEncoder(w)
+	err := encoder.Encode(tasks)
+	if err != nil {
+		log.Printf("Could not encode json %v", err)
+	}
 }
