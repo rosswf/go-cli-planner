@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 type TaskServer struct {
@@ -15,11 +18,13 @@ func NewTaskServer(taskList *TaskList) *TaskServer {
 	p := new(TaskServer)
 	p.taskList = taskList
 
-	router := http.NewServeMux()
-	router.Handle("/tasks", http.HandlerFunc(p.tasksHandler))
+	r := chi.NewRouter()
 
-	p.Handler = router
+	r.Use(middleware.Logger)
 
+	r.Get("/tasks", p.tasksHandler)
+
+	p.Handler = r
 	return p
 }
 
