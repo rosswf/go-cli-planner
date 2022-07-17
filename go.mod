@@ -4,12 +4,12 @@ go 1.18
 
 require (
 	github.com/charmbracelet/bubbletea v0.22.0
+	github.com/go-chi/chi/v5 v5.0.7
 	github.com/mattn/go-sqlite3 v1.14.13
 )
 
 require (
 	github.com/containerd/console v1.0.3 // indirect
-	github.com/go-chi/chi/v5 v5.0.7 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect

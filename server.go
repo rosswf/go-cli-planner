@@ -22,18 +22,25 @@ func NewTaskServer(taskList *TaskList) *TaskServer {
 
 	r.Use(middleware.Logger)
 
-	r.Get("/tasks", p.tasksHandler)
+	r.Route("/tasks", func(r chi.Router) {
+		r.Get("/", p.tasksHandler)
+	})
 
 	p.Handler = r
 	return p
 }
 
 func (p *TaskServer) tasksHandler(w http.ResponseWriter, r *http.Request) {
-	tasks, _ := p.taskList.GetAll()
+	tasks, err := p.taskList.GetAll()
+	if err != nil {
+		log.Printf("Could not get tasks %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 
 	encoder := json.NewEncoder(w)
-	err := encoder.Encode(tasks)
+	err = encoder.Encode(tasks)
 	if err != nil {
 		log.Printf("Could not encode json %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
