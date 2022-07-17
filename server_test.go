@@ -45,6 +45,27 @@ func TestGETTasks(t *testing.T) {
 		}
 	})
 
+	t.Run("test /tasks/incomplete returns a list of tasks", func(t *testing.T) {
+		request, _ := http.NewRequest(http.MethodGet, "/tasks/incomplete", nil)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusOK)
+
+		got := decodeTaskList(t, response.Body)
+		want := []todo.Task{
+			{
+				Id:       1,
+				Name:     "Task 1",
+				Complete: false,
+			},
+		}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got response %+v, want %+v", got, want)
+		}
+	})
 }
 
 func assertStatus(t testing.TB, got, want int) {
