@@ -66,6 +66,26 @@ func TestGETTasks(t *testing.T) {
 			t.Errorf("got response %+v, want %+v", got, want)
 		}
 	})
+
+	t.Run("test /tasks/2 returns the correct task", func(t *testing.T) {
+		request, _ := http.NewRequest(http.MethodGet, "/tasks/2", nil)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusOK)
+
+		got := decodeTask(t, response.Body)
+		want := todo.Task{
+			Id:       2,
+			Name:     "Task 2",
+			Complete: true,
+		}
+
+		if !reflect.DeepEqual(got, want) {
+			t.Errorf("got response %+v, want %+v", got, want)
+		}
+	})
 }
 
 func assertStatus(t testing.TB, got, want int) {
@@ -79,6 +99,16 @@ func assertStatus(t testing.TB, got, want int) {
 func decodeTaskList(t testing.TB, taskList *bytes.Buffer) []todo.Task {
 	var got []todo.Task
 	err := json.NewDecoder(taskList).Decode(&got)
+
+	if err != nil {
+		t.Fatalf("Could not decode json, %v", err)
+	}
+	return got
+}
+
+func decodeTask(t testing.TB, task *bytes.Buffer) todo.Task {
+	var got todo.Task
+	err := json.NewDecoder(task).Decode(&got)
 
 	if err != nil {
 		t.Fatalf("Could not decode json, %v", err)

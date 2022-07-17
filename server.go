@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -25,6 +26,7 @@ func NewTaskServer(taskList *TaskList) *TaskServer {
 	r.Route("/tasks", func(r chi.Router) {
 		r.Get("/", p.tasksHandler)
 		r.Get("/incomplete", p.incompleteHandler)
+		r.Get("/{taskID:[0-9]+}", p.taskHandler)
 	})
 
 	p.Handler = r
@@ -49,6 +51,29 @@ func (p *TaskServer) incompleteHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, tasks)
+}
+
+func (p *TaskServer) taskHandler(w http.ResponseWriter, r *http.Request) {
+	idParam := chi.URLParam(r, "taskID")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		log.Printf("Invalid taskID given %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+	}
+	taskId := TaskId(id)
+
+	task, err := p.taskList.GetOne(taskId)
+	if err != nil {
+		log.Printf("Could not get task with id %d, %v", taskId, err)
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	err = json.NewEncoder(w).Encode(task)
+
+	if err != nil {
+		log.Printf("Could not encoide json %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }
 
 func writeJSON(w http.ResponseWriter, tasks []Task) {
