@@ -30,6 +30,7 @@ func NewTaskServer(taskList *TaskList) *TaskServer {
 		r.Get("/incomplete", p.incompleteHandler)
 		r.Get("/{taskID:^[1-9][0-9]*}", p.taskHandler)
 		r.Post("/{taskID:^[1-9][0-9]*}", p.taskStatusToggleHandler)
+		r.Delete("/{taskID:^[1-9][0-9]*}", p.taskDeleteHandler)
 	})
 
 	p.Handler = r
@@ -128,6 +129,32 @@ func (p *TaskServer) taskStatusToggleHandler(w http.ResponseWriter, r *http.Requ
 	err = p.taskList.ToggleStatus(&task)
 	if err != nil {
 		log.Printf("Could not toggle status of task %v, %v", task, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusAccepted)
+}
+
+func (p *TaskServer) taskDeleteHandler(w http.ResponseWriter, r *http.Request) {
+	idParam := chi.URLParam(r, "taskID")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		log.Printf("Invalid taskID given %v", err)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	taskId := TaskId(id)
+
+	task, err := p.taskList.GetOne(taskId)
+	if err != nil {
+		log.Printf("Could not get task with id %d, %v", taskId, err)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	err = p.taskList.Delete(&task)
+	if err != nil {
+		log.Printf("Could not delete task %v, %v", task, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
