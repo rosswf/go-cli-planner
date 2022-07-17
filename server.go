@@ -26,7 +26,7 @@ func NewTaskServer(taskList *TaskList) *TaskServer {
 	r.Route("/tasks", func(r chi.Router) {
 		r.Get("/", p.tasksHandler)
 		r.Get("/incomplete", p.incompleteHandler)
-		r.Get("/{taskID:[0-9]+}", p.taskHandler)
+		r.Get("/{taskID:^[1-9][0-9]*}", p.taskHandler)
 	})
 
 	p.Handler = r
@@ -41,7 +41,7 @@ func (p *TaskServer) tasksHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, tasks)
+	writeTasksJSON(w, tasks)
 }
 
 func (p *TaskServer) incompleteHandler(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +52,7 @@ func (p *TaskServer) incompleteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, tasks)
+	writeTasksJSON(w, tasks)
 }
 
 func (p *TaskServer) taskHandler(w http.ResponseWriter, r *http.Request) {
@@ -81,7 +81,7 @@ func (p *TaskServer) taskHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func writeJSON(w http.ResponseWriter, tasks []Task) {
+func writeTasksJSON(w http.ResponseWriter, tasks []Task) {
 	encoder := json.NewEncoder(w)
 	err := encoder.Encode(tasks)
 

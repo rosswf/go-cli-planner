@@ -86,6 +86,15 @@ func TestGETTasks(t *testing.T) {
 			t.Errorf("got response %+v, want %+v", got, want)
 		}
 	})
+
+	t.Run("test /tasks/0 return 404", func(t *testing.T) {
+		request, _ := http.NewRequest(http.MethodGet, "/tasks/0", nil)
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+
+		assertStatus(t, response.Code, http.StatusNotFound)
+	})
 }
 
 func assertStatus(t testing.TB, got, want int) {
