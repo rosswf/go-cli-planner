@@ -24,7 +24,7 @@ func NewTaskServer(taskList *TaskList) *TaskServer {
 	r.Use(middleware.Logger)
 
 	r.Route("/tasks", func(r chi.Router) {
-		r.Use(setJsonContentType)
+		r.Use(setHeaders)
 		r.Get("/", p.tasksHandler)
 		r.Post("/", p.newTaskHandler)
 		r.Get("/incomplete", p.incompleteHandler)
@@ -37,9 +37,10 @@ func NewTaskServer(taskList *TaskList) *TaskServer {
 	return p
 }
 
-func setJsonContentType(next http.Handler) http.Handler {
+func setHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		next.ServeHTTP(w, r)
 	})
 }
