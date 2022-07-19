@@ -12,9 +12,9 @@ type TaskStorage interface {
 type TaskId int64
 
 type Task struct {
-	Id       TaskId
-	Name     string
-	Complete bool
+	Id       TaskId `json:"id"`
+	Name     string `json:"name"`
+	Complete bool   `json:"complete"`
 }
 
 type TaskList struct {
