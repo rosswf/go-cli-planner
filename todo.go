@@ -1,5 +1,9 @@
 package todo
 
+import (
+	"github.com/go-playground/validator/v10"
+)
+
 type TaskStorage interface {
 	Add(*Task) error
 	GetAll() ([]Task, error)
@@ -13,8 +17,13 @@ type TaskId int64
 
 type Task struct {
 	Id       TaskId `json:"id"`
-	Name     string `json:"name"`
+	Name     string `json:"name" validate:"required"`
 	Complete bool   `json:"complete"`
+}
+
+func (t *Task) Validate() error {
+	validate := validator.New()
+	return validate.Struct(t)
 }
 
 type TaskList struct {

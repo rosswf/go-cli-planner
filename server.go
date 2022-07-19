@@ -15,6 +15,11 @@ type TaskServer struct {
 	http.Handler
 }
 
+type StatusResponse struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
 func NewTaskServer(taskList *TaskList) *TaskServer {
 	p := new(TaskServer)
 	p.taskList = taskList
@@ -96,18 +101,32 @@ func (p *TaskServer) taskHandler(w http.ResponseWriter, r *http.Request) {
 func (p *TaskServer) newTaskHandler(w http.ResponseWriter, r *http.Request) {
 	var task Task
 	err := json.NewDecoder(r.Body).Decode(&task)
+	task.Validate()
 
 	if err != nil {
-		log.Printf("Could not decode json %v", err)
+		log.Printf("Could not decode json, %v", err)
 		w.WriteHeader(http.StatusBadRequest)
+		writeJSONStatusResponse(w, "failure", "Task could not be added")
 		return
 	}
-	w.WriteHeader(http.StatusAccepted)
+
+	err = task.Validate()
+	if err != nil {
+		log.Printf("Validation failed, %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		writeJSONStatusResponse(w, "failure", "Task could not be added")
+		return
+	}
 
 	err = p.taskList.Add(task.Name)
 	if err != nil {
 		log.Printf("Could not add task %v, %v", task, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		writeJSONStatusResponse(w, "failure", "Task could not be added")
+		return
 	}
+	w.WriteHeader(http.StatusAccepted)
+	writeJSONStatusResponse(w, "success", "Task Added")
 }
 
 func (p *TaskServer) taskStatusToggleHandler(w http.ResponseWriter, r *http.Request) {
@@ -165,6 +184,18 @@ func (p *TaskServer) taskDeleteHandler(w http.ResponseWriter, r *http.Request) {
 func writeTasksJSON(w http.ResponseWriter, tasks []Task) {
 	encoder := json.NewEncoder(w)
 	err := encoder.Encode(tasks)
+
+	if err != nil {
+		log.Printf("Could not encode json %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func writeJSONStatusResponse(w http.ResponseWriter, status, message string) {
+	encoder := json.NewEncoder(w)
+	s := StatusResponse{status, message}
+	err := encoder.Encode(s)
 
 	if err != nil {
 		log.Printf("Could not encode json %v", err)

@@ -156,6 +156,39 @@ func TestPOSTTasks(t *testing.T) {
 		}
 	})
 
+	t.Run("test POST to /tasks (Create new task) returns success response", func(t *testing.T) {
+		jsonData := []byte(`{"Name": "New Task"}`)
+		request, _ := http.NewRequest(http.MethodPost, "/tasks", bytes.NewBuffer(jsonData))
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+		assertStatus(t, response.Code, http.StatusAccepted)
+
+		got := response.Body.String()
+		want := `{"status":"success","message":"Task Added"}
+`
+		if got != want {
+			t.Errorf("got response '%v', want '%v'", got, want)
+		}
+	})
+
+	t.Run("test POST with incorrect data to /tasks returns error response", func(t *testing.T) {
+		jsonData := []byte(`{"Id": "New Task"}`)
+		request, _ := http.NewRequest(http.MethodPost, "/tasks", bytes.NewBuffer(jsonData))
+		response := httptest.NewRecorder()
+
+		server.ServeHTTP(response, request)
+		assertStatus(t, response.Code, http.StatusBadRequest)
+
+		got := response.Body.String()
+		want := `{"status":"failure","message":"Task could not be added"}
+`
+		if got != want {
+			t.Errorf("got response '%v', want '%v'", got, want)
+		}
+
+	})
+
 }
 
 func TestDELETETasks(t *testing.T) {
