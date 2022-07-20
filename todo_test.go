@@ -14,11 +14,11 @@ type MockTaskStorage struct {
 	taskList []todo.Task
 }
 
-func (m *MockTaskStorage) Add(task *todo.Task) error {
+func (m *MockTaskStorage) Add(task *todo.Task) (todo.TaskId, error) {
 	id := len(m.taskList) + 1
 	task.Id = todo.TaskId(id)
 	m.taskList = append(m.taskList, *task)
-	return nil
+	return todo.TaskId(id), nil
 }
 
 func (m *MockTaskStorage) GetAll() ([]todo.Task, error) {
@@ -74,7 +74,7 @@ func TestTasks(t *testing.T) {
 	taskList := todo.CreateTaskList(storage)
 
 	t.Run("A task is added to the task list", func(t *testing.T) {
-		err := taskList.Add("Task 1")
+		_, err := taskList.Add("Task 1")
 		AssertNoError(t, err)
 
 		got, err := taskList.GetAll()
@@ -173,7 +173,11 @@ func TestSqlite3TaskStorage(t *testing.T) {
 	AssertNoError(t, err)
 
 	t.Run("Add a new task to sqlite storage", func(t *testing.T) {
-		AddTaskToDB(t, storage, "Task 1", false)
+		id := AddTaskToDB(t, storage, "Task 1", false)
+
+		if id != 1 {
+			t.Errorf("got %d want %d", id, 1)
+		}
 
 		got, err := storage.GetAll()
 		AssertNoError(t, err)
@@ -254,9 +258,10 @@ func AssertTaskListsEqual(t testing.TB, got []todo.Task, want []todo.Task) {
 	}
 }
 
-func AddTaskToDB(t testing.TB, storage *storage.Sqlite3TaskStorage, name string, status bool) {
+func AddTaskToDB(t testing.TB, storage *storage.Sqlite3TaskStorage, name string, status bool) todo.TaskId {
 	t.Helper()
 	task := todo.Task{Name: name, Complete: status}
-	err := storage.Add(&task)
+	id, err := storage.Add(&task)
 	AssertNoError(t, err)
+	return id
 }

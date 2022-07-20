@@ -156,7 +156,7 @@ func TestPOSTTasks(t *testing.T) {
 		}
 	})
 
-	t.Run("test POST to /tasks (Create new task) returns success response", func(t *testing.T) {
+	t.Run("test POST to /tasks (Create new task) returns task", func(t *testing.T) {
 		jsonData := []byte(`{"Name": "New Task"}`)
 		request, _ := http.NewRequest(http.MethodPost, "/tasks", bytes.NewBuffer(jsonData))
 		response := httptest.NewRecorder()
@@ -165,7 +165,7 @@ func TestPOSTTasks(t *testing.T) {
 		assertStatus(t, response.Code, http.StatusAccepted)
 
 		got := response.Body.String()
-		want := `{"status":"success","message":"Task Added"}
+		want := `[{"id":2,"name":"New Task","complete":false}]
 `
 		if got != want {
 			t.Errorf("got response '%v', want '%v'", got, want)

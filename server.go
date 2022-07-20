@@ -101,7 +101,6 @@ func (p *TaskServer) taskHandler(w http.ResponseWriter, r *http.Request) {
 func (p *TaskServer) newTaskHandler(w http.ResponseWriter, r *http.Request) {
 	var task Task
 	err := json.NewDecoder(r.Body).Decode(&task)
-	task.Validate()
 
 	if err != nil {
 		log.Printf("Could not decode json, %v", err)
@@ -118,15 +117,16 @@ func (p *TaskServer) newTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = p.taskList.Add(task.Name)
+	id, err := p.taskList.Add(task.Name)
 	if err != nil {
 		log.Printf("Could not add task %v, %v", task, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		writeJSONStatusResponse(w, "failure", "Task could not be added")
 		return
 	}
+	task.Id = id
 	w.WriteHeader(http.StatusAccepted)
-	writeJSONStatusResponse(w, "success", "Task Added")
+	writeTasksJSON(w, []Task{task})
 }
 
 func (p *TaskServer) taskStatusToggleHandler(w http.ResponseWriter, r *http.Request) {

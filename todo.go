@@ -5,7 +5,7 @@ import (
 )
 
 type TaskStorage interface {
-	Add(*Task) error
+	Add(*Task) (TaskId, error)
 	GetAll() ([]Task, error)
 	GetTask(TaskId) (*Task, error)
 	ToggleStatus(TaskId) error
@@ -34,13 +34,13 @@ func CreateTaskList(storage TaskStorage) *TaskList {
 	return &TaskList{storage: storage}
 }
 
-func (t *TaskList) Add(name string) error {
+func (t *TaskList) Add(name string) (TaskId, error) {
 	task := Task{Name: name, Complete: false}
-	err := t.storage.Add(&task)
+	id, err := t.storage.Add(&task)
 	if err != nil {
-		return err
+		return -1, err
 	}
-	return nil
+	return id, nil
 }
 
 func (t *TaskList) GetAll() ([]Task, error) {

@@ -30,13 +30,18 @@ func (s *Sqlite3TaskStorage) Close() {
 	s.conn.Close()
 }
 
-func (s *Sqlite3TaskStorage) Add(task *todo.Task) error {
+func (s *Sqlite3TaskStorage) Add(task *todo.Task) (todo.TaskId, error) {
 	sqlStmt := "INSERT INTO tasks(name, complete) values(?, ?)"
-	_, err := s.conn.Exec(sqlStmt, task.Name, task.Complete)
+	result, err := s.conn.Exec(sqlStmt, task.Name, task.Complete)
 	if err != nil {
-		return err
+		return -1, err
 	}
-	return err
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return -1, err
+	}
+	return todo.TaskId(id), err
 }
 
 func (s *Sqlite3TaskStorage) GetAll() ([]todo.Task, error) {
