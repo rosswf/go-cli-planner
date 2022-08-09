@@ -125,7 +125,7 @@ func (p *TaskServer) newTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	task.Id = id
-	w.WriteHeader(http.StatusAccepted)
+	w.WriteHeader(http.StatusCreated)
 	writeTasksJSON(w, []Task{task})
 }
 

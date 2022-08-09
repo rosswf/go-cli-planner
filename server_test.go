@@ -115,7 +115,7 @@ func TestPOSTTasks(t *testing.T) {
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
-		assertStatus(t, response.Code, http.StatusAccepted)
+		assertStatus(t, response.Code, http.StatusCreated)
 
 		// Get all
 		request, _ = http.NewRequest(http.MethodGet, "/tasks", nil)
@@ -162,7 +162,7 @@ func TestPOSTTasks(t *testing.T) {
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
-		assertStatus(t, response.Code, http.StatusAccepted)
+		assertStatus(t, response.Code, http.StatusCreated)
 
 		got := response.Body.String()
 		want := `[{"id":2,"name":"New Task","complete":false}]
