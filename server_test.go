@@ -106,30 +106,19 @@ func TestPOSTTasks(t *testing.T) {
 	taskList := todo.CreateTaskList(storage)
 	server := todo.NewTaskServer(taskList)
 
-	t.Run("test POST to /tasks adds a task", func(t *testing.T) {
+	t.Run("test POST to /tasks (Create new task) returns task", func(t *testing.T) {
 		jsonData := []byte(`{"Name": "New Task"}`)
-
 		request, _ := http.NewRequest(http.MethodPost, "/tasks", bytes.NewBuffer(jsonData))
-		request.Header.Set("content-type", "application/json")
-
 		response := httptest.NewRecorder()
 
 		server.ServeHTTP(response, request)
 		assertStatus(t, response.Code, http.StatusCreated)
 
-		// Get all
-		request, _ = http.NewRequest(http.MethodGet, "/tasks", nil)
-		response = httptest.NewRecorder()
-
-		server.ServeHTTP(response, request)
-
-		assertStatus(t, response.Code, http.StatusOK)
-
-		got := decodeTaskList(t, response.Body)
-		want := []todo.Task{{Id: 1, Name: "New Task", Complete: false}}
-
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("got response %+v, want %+v", got, want)
+		got := response.Body.String()
+		want := `[{"id":1,"name":"New Task","complete":false}]
+`
+		if got != want {
+			t.Errorf("got response '%v', want '%v'", got, want)
 		}
 	})
 
@@ -153,22 +142,6 @@ func TestPOSTTasks(t *testing.T) {
 
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("got response %+v, want %+v", got, want)
-		}
-	})
-
-	t.Run("test POST to /tasks (Create new task) returns task", func(t *testing.T) {
-		jsonData := []byte(`{"Name": "New Task"}`)
-		request, _ := http.NewRequest(http.MethodPost, "/tasks", bytes.NewBuffer(jsonData))
-		response := httptest.NewRecorder()
-
-		server.ServeHTTP(response, request)
-		assertStatus(t, response.Code, http.StatusCreated)
-
-		got := response.Body.String()
-		want := `[{"id":2,"name":"New Task","complete":false}]
-`
-		if got != want {
-			t.Errorf("got response '%v', want '%v'", got, want)
 		}
 	})
 
