@@ -1,4 +1,4 @@
-module github.com/rosswf/go-todo-cli
+module github.com/rosswf/go-todo
 
 go 1.18
 

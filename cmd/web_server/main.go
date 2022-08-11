@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/rosswf/go-todo-cli"
-	storage "github.com/rosswf/go-todo-cli/storage"
+	"github.com/rosswf/go-todo"
+	storage "github.com/rosswf/go-todo/storage"
 )
 
 func main() {

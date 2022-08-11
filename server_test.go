@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/rosswf/go-todo-cli"
+	"github.com/rosswf/go-todo"
 )
 
 var dummyData = []todo.Task{

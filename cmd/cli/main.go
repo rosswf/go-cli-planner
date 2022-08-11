@@ -5,8 +5,8 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
-	todo "github.com/rosswf/go-todo-cli"
-	storage "github.com/rosswf/go-todo-cli/storage"
+	todo "github.com/rosswf/go-todo"
+	storage "github.com/rosswf/go-todo/storage"
 )
 
 type model struct {

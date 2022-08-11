@@ -4,7 +4,7 @@ import (
 	"database/sql"
 
 	_ "github.com/mattn/go-sqlite3"
-	todo "github.com/rosswf/go-todo-cli"
+	todo "github.com/rosswf/go-todo"
 )
 
 type Sqlite3TaskStorage struct {
