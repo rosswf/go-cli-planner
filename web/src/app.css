@@ -1,0 +1,4 @@
+.to-do-list {
+  width: min(100vw, 900px);
+  margin: auto;
+}
