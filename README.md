@@ -12,7 +12,7 @@ To utilise the the backend I've put together a simple frontend using Svelte.
 
 The full web application utilising the backend and frontend can be run using:
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 It is then accessed at http://localhost:8080
 
