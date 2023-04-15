@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/rosswf/go-todo"
@@ -191,6 +192,27 @@ func TestDELETETasks(t *testing.T) {
 			t.Errorf("got response %+v, want %+v", got, want)
 		}
 	})
+
+}
+
+func TestHomeRoute(t *testing.T) {
+	storage := CreateMockStorage(dummyData)
+	taskList := todo.CreateTaskList(storage)
+	server := todo.NewTaskServer(taskList)
+
+	request, _ := http.NewRequest(http.MethodGet, "/", nil)
+	response := httptest.NewRecorder()
+
+	server.ServeHTTP(response, request)
+
+	assertStatus(t, response.Code, http.StatusOK)
+
+	want := "<h1>My Awesome To-Do List</h1>"
+	got := response.Body.String()
+
+	if !strings.Contains(got, want) {
+		t.Errorf("got %s want %s", got, want)
+	}
 
 }
 

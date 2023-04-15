@@ -28,6 +28,8 @@ func NewTaskServer(taskList *TaskList) *TaskServer {
 
 	r.Use(middleware.Logger)
 
+	r.Get("/", p.homeHandler)
+
 	r.Route("/tasks", func(r chi.Router) {
 		r.Use(setHeaders)
 		r.Get("/", p.tasksHandler)
@@ -48,6 +50,11 @@ func setHeaders(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		next.ServeHTTP(w, r)
 	})
+}
+
+// Hacky but the main purpose of this change is to test a htmx frontend
+func (p *TaskServer) homeHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "web/htmx/index.html")
 }
 
 func (p *TaskServer) tasksHandler(w http.ResponseWriter, r *http.Request) {
