@@ -5,6 +5,6 @@ services:
     ports:
       - "5000:5000"
   frontend:
-    build: web/
+    build: web/svelte/
     ports:
       - "8080:80"
